@@ -1,0 +1,63 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: Terraform fmt, validate, test
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: terraform fmt
+        run: terraform fmt -check -recursive -diff
+
+      # -backend=false: the module has no backend. Init only resolves the
+      # provider schema for validate and test.
+      - name: Validate root module
+        run: |
+          terraform init -backend=false -input=false
+          terraform validate
+
+      # Examples source the module by path, so a break in its public interface
+      # fails here even when the root validates.
+      - name: Validate examples
+        run: |
+          for dir in examples/*/; do
+            echo "==> ${dir}"
+            terraform -chdir="${dir}" init -backend=false -input=false
+            terraform -chdir="${dir}" validate
+          done
+
+      # Mock provider only: no Cloudflare credentials, no network calls.
+      - name: terraform test
+        run: terraform test
+
+  classification:
+    name: Classification and dashboard doc
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check classification.yaml
+        run: python3 scripts/classification.py check
+
+      - name: Check docs/dashboard-token.md is up to date
+        run: python3 scripts/classification.py render --check
