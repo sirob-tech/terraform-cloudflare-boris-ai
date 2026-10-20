@@ -95,7 +95,7 @@ Trust Client Platform** (Cloudflare's
 ```hcl
 module "boris_cloudflare" {
   source  = "sirob-tech/boris-ai/cloudflare"
-  version = "~> 1.0"
+  version = "~> 0.1"
 
   account_id  = "0123456789abcdef0123456789abcdef"
   allowed_ips = ["203.0.113.10", "203.0.113.11"] # from the B.O.R.I.S team

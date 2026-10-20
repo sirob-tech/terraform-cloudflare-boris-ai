@@ -18,7 +18,7 @@ provider "cloudflare" {}
 module "boris_cloudflare" {
   # Published as:
   #   source  = "sirob-tech/boris-ai/cloudflare"
-  #   version = "~> 1.0"
+  #   version = "~> 0.1"
   source = "../../"
 
   account_id  = "0123456789abcdef0123456789abcdef"
